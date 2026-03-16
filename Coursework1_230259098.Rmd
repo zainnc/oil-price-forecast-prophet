@@ -1,0 +1,90 @@
+---
+title: "MTH6139 Time Series" 
+subtitle: "Coursework 1" 
+author: "Zain Chowdhury" 
+date: "Spring term 2025" 
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: spacelab 
+    highlight: tango
+---
+ 
+```{r, echo=FALSE}
+# This code will display the QMUL logo at the top right of the page
+# Do not change this code
+htmltools::img(src = knitr::image_uri("images/QMlogo.png"),
+               alt = 'logo',
+               style = 'position:absolute; top:0; right:0; padding:10px; width:20%;')
+```
+
+# Introduction
+
+Oil prices are an important indicator of global economic activity and they're mainly influenced by geopolitical conflicts, supply disruptions and economic demand.
+
+In this project I decided to analyse Brent crude oil prices and use Meta’s Prophet forecasting model to predict future oil prices.
+
+# Data
+
+```{r warning=FALSE, message=FALSE}
+library(prophet)
+library(readr)
+library(dplyr)
+
+oil_data <- read_csv("data/brent_oil.csv")
+head(oil_data)
+```
+
+# Preparing the data for Prophet
+
+```{r}
+oil_prophet <- oil_data %>%
+  rename(ds = observation_date, y = DCOILBRENTEU)
+
+oil_prophet$ds <- as.Date(oil_prophet$ds)
+
+head(oil_prophet)
+```
+
+# Visualising oil prices
+
+```{r}
+
+plot(oil_prophet$ds,
+     oil_prophet$y,
+     type="l",
+     main="Brent Crude Oil Prices",
+     xlab="Year",
+     ylab="Price (USD)")
+```
+
+# Prophet model
+
+```{r}
+oil_model <- prophet(oil_prophet)
+```
+
+In this section we fit a forecasting model using Meta's Prophet library.
+
+# Forecasting future oil prices and components
+
+```{r}
+future_dates <- make_future_dataframe(oil_model, periods = 365)
+
+forecast <- predict(oil_model, future_dates)
+
+plot(oil_model, forecast)
+
+prophet_plot_components(oil_model, forecast)
+```
+
+This forecast shows the predicted trajectory of oil prices based on previous trends and then decomposes this into trends and seasonal components
+
+# Conclusion
+
+In this project I analysed Brent crude oil prices using a time series approach and then applied the Prophet model to forecast future price movements. The historical data shows that oil prices have experienced several periods of sharp increases and declines over time.
+
+From the visualisation of the data, I've noticed that oil prices tend to increase during periods of global conflict or geopolitical tension. For example, there are significant rises in oil prices around early 2022, around the same time as the start of the Russian-Ukraine war. I believe this is due to the uncertainty created from this in global energy markets because Russia is one of the world's largest exporters of oil and natural gas, so disruptions like these promote shortages/anticipation for shortages in the market.
+
+The Prophet forecasting model captures the overall trend in the time series and provides an estimate of how oil prices may evolve in the future. Although it cannot predict unexpected global events, it is useful for identifying historical patterns and generating informed forecasts based on past data.
